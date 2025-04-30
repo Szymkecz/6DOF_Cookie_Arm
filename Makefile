@@ -5,6 +5,7 @@ DRIVERS_DIR := ${PROJECT_DIR}/Drivers
 REQUIREMENTS_DIR := ${PROJECT_DIR}/requirements
 STM32CUBEMX_DIR := ${PROJECT_DIR}/cmake/stm32cubemx
 # STM32_UTILITY_DIR := ${APP_DIR}/stm32_utility
+EIGEN_DIR := ${REQUIREMENTS_DIR}/eigen
 
 .PHONY: build
 build: 

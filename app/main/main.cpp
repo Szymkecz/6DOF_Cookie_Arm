@@ -9,10 +9,12 @@
 #include "servo_manager.hpp"
 #include "stdio.h"
 #include "string.h"
+#include "Eigen/Dense"
 
 uint8_t UART2_rxBuffer[21] = {0};
 volatile bool is_htim3_time_done = false;
 
+Eigen::Matrix4d T6_0 = Eigen::Matrix4d::Zero();
 float f_val;
 uint8_t uart_data[7];
 
@@ -79,12 +81,13 @@ int main()
         // ServoManager::SrvArray[2].print_config();
         // Controller.play_demo();
         if (is_htim3_time_done) {
-            // ServoManager::print_angles();
+            ServoManager::print_angles();
             // if (uart_data[5] != 0) {
             //     ServoManager::SrvArray[5].set_angle(
-            //         ServoManager::SrvArray[5].get_curr_angle() + uart_data[5]);
+            //         ServoManager::SrvArray[5].get_curr_angle() +
+            //         uart_data[5]);
             // }
-            Controller.update(f_val,uart_data);
+            Controller.update(f_val, uart_data);
             is_htim3_time_done = false;
         }
         // HAL_Delay(20);
@@ -107,7 +110,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
         // HAL_UART_Transmit(&huart2, UART2_rxBuffer, 21, 100);
 
         // Optionally parse the message first
-        
+
         if (parse_uart_message((char*)UART2_rxBuffer, &f_val, uart_data)) {
             // // Format and transmit f_val + data
             // char msg[32];

@@ -20,6 +20,8 @@ message("Build type: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+include_directories(${PROJECT_SOURCE_DIR}/requirements/eigen)
+
 add_subdirectory(cmake/stm32cubemx)
 add_subdirectory(app/main)
 add_subdirectory(app/cookie/servo_lib)
@@ -29,7 +31,3 @@ add_subdirectory(app/cookie/robot_controller)
 target_compile_options(stm32cubemx INTERFACE 
     -w
 )
-# target_link_options(app PRIVATE 
-#     -u _printf_float 
-#     # -u _scanf_float
-# )

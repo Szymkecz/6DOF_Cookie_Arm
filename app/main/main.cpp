@@ -14,7 +14,7 @@
 uint8_t UART2_rxBuffer[21] = {0};
 volatile bool is_htim3_time_done = false;
 
-Eigen::Matrix4d T6_0 = Eigen::Matrix4d::Zero();
+Eigen::Matrix4d T6_0 = Eigen::Matrix4d::Identity();
 float f_val;
 uint8_t uart_data[7];
 
@@ -81,12 +81,13 @@ int main()
         // ServoManager::SrvArray[2].print_config();
         // Controller.play_demo();
         if (is_htim3_time_done) {
-            ServoManager::print_angles();
+            // ServoManager::print_angles();
             // if (uart_data[5] != 0) {
             //     ServoManager::SrvArray[5].set_angle(
             //         ServoManager::SrvArray[5].get_curr_angle() +
             //         uart_data[5]);
             // }
+            printf("%.1f\r\n",T6_0(0,0));
             Controller.update(f_val, uart_data);
             is_htim3_time_done = false;
         }

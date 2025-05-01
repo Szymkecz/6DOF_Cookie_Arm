@@ -23,6 +23,9 @@ namespace ServoManager {
     // middle pos at 1475
     constexpr uint16_t J6_MIN_PWM = 500;
     constexpr uint16_t J6_MAX_PWM = 2450;
+    //GRIPPER-----------------
+    constexpr uint16_t J7_MIN_PWM = 350;
+    constexpr uint16_t J7_MAX_PWM = 2600;
     //-------------------------------------
     Servo SrvArray[SERVO_COUNT];
 
@@ -35,6 +38,7 @@ namespace ServoManager {
         SrvArray[3].init(&htim1, TIM_CHANNEL_1, J4_MIN_PWM, J4_MAX_PWM);
         SrvArray[4].init(&htim1, TIM_CHANNEL_3, J5_MIN_PWM, J5_MAX_PWM);
         SrvArray[5].init(&htim1, TIM_CHANNEL_4, J6_MIN_PWM, J6_MAX_PWM);
+        SrvArray[6].init(&htim3, TIM_CHANNEL_4, J7_MIN_PWM, J7_MAX_PWM);
 
         SrvArray[2].set_new_map(180, 0);
         // added offsets for
@@ -44,37 +48,38 @@ namespace ServoManager {
         SrvArray[3].set_angle_offset(100);
         SrvArray[4].set_angle_offset(90);
         SrvArray[5].set_angle_offset(90);
+        SrvArray[6].set_angle_offset(90);
     }
 
-    void set_pwm(uint16_t pwm_val[6])
+    void set_pwm(uint16_t pwm_val[SERVO_COUNT])
     {
-        for (uint8_t i = 0; i < SERVO_COUNT - 1; i++) {
+        for (uint8_t i = 0; i < SERVO_COUNT; i++) {
             SrvArray[i].set_pwm(pwm_val[i]);
         }
     }
 
-    void set_angles(std::array<double, SERVO_COUNT - 1>& angles)
+    void set_angles(std::array<double, SERVO_COUNT>& angles)
     {
-        for (uint8_t i = 0; i < SERVO_COUNT - 1; i++) {
+        for (uint8_t i = 0; i < SERVO_COUNT; i++) {
             SrvArray[i].set_angle(angles[i]);
         }
     }
 
-    std::array<uint16_t, SERVO_COUNT - 1> get_curr_pwm()
+    std::array<uint16_t, SERVO_COUNT> get_curr_pwm()
     {
-        std::array<uint16_t, SERVO_COUNT - 1> pwm;
+        std::array<uint16_t, SERVO_COUNT> pwm;
 
-        for (uint8_t i = 0; i < SERVO_COUNT - 1; i++) {
+        for (uint8_t i = 0; i < SERVO_COUNT; i++) {
             pwm[i] = SrvArray[i].get_curr_pwm();
         }
         return pwm;
     }
 
-    std::array<double, SERVO_COUNT - 1> get_curr_angles()
+    std::array<double, SERVO_COUNT> get_curr_angles()
     {
-        std::array<double, SERVO_COUNT - 1> angles;
+        std::array<double, SERVO_COUNT> angles;
 
-        for (uint8_t i = 0; i < SERVO_COUNT - 1; i++) {
+        for (uint8_t i = 0; i < SERVO_COUNT; i++) {
             angles[i] = SrvArray[i].get_curr_angle();
         }
         return angles;
@@ -82,23 +87,24 @@ namespace ServoManager {
 
     void print_curr_pwm()
     {
-        std::array<uint16_t, SERVO_COUNT - 1> pwm;
+        std::array<uint16_t, SERVO_COUNT> pwm;
         pwm = get_curr_pwm();
 
         char buffor[128];
 
-        printf("current pwm: %u, %u, %u, %u, %u, %u \r\n",
+        printf("current pwm: %u, %u, %u, %u, %u, %u, %u \r\n",
                pwm[0],
                pwm[1],
                pwm[2],
                pwm[3],
                pwm[4],
-               pwm[5]);
+               pwm[5],
+               pwm[6]);
     }
 
     void print_angles()
     {
-        std::array<double, SERVO_COUNT - 1> angles;
+        std::array<double, SERVO_COUNT> angles;
         angles = get_curr_angles();
 
         char buffor[128];
@@ -120,7 +126,7 @@ namespace ServoManager {
         if (is_done) {
             return;
         }
-        for (uint8_t i = 0; i < SERVO_COUNT - 1; i++) {
+        for (uint8_t i = 0; i < SERVO_COUNT; i++) {
             printf("----| %u |-----\r\n", i);
             SrvArray[i].print_config();
         }

@@ -10,10 +10,10 @@ struct RobotController {
 public:
     void init();
     void play_demo();
-    void update(float f_val, uint8_t uart_data[7]);
+    void update(float f_val, uint8_t uart_data[SERVO_COUNT]);
 
 private:
-    array<double, SERVO_COUNT - 1> angles = {0.0};
+    array<double, SERVO_COUNT> angles = {0.0};
 };
 
 #endif // ROBOT_CONTROLLER_HPP

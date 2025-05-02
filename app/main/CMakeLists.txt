@@ -13,7 +13,7 @@ target_link_libraries(app PRIVATE
     servo_lib
     servo_manager
     robot_controller
-    
+    kinematics
     )
 
 target_compile_options(app PUBLIC

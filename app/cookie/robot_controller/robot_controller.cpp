@@ -5,6 +5,8 @@ void RobotController::init()
 {
     ServoManager::init();
     ServoManager::set_angles(this->angles);
+    ServoManager::print_servo_config();
+    HAL_Delay(200);
 }
 
 void RobotController::play_demo()

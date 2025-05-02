@@ -9,7 +9,7 @@
 #include "servo_manager.hpp"
 #include "stdio.h"
 #include "string.h"
-#include "Eigen/Dense"
+#include "kinematics.hpp"
 
 uint8_t UART2_rxBuffer[21] = {0};
 volatile bool is_htim3_time_done = false;
@@ -72,8 +72,8 @@ int main()
     RobotController Controller;
     Controller.init();
 
-    ServoManager::print_servo_config();
-    HAL_Delay(200);
+    // ServoManager::print_servo_config();
+    // HAL_Delay(200);
 
     HAL_UART_Receive_DMA(&huart2, UART2_rxBuffer, 21);
 

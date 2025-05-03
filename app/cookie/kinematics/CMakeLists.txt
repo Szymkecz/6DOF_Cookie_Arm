@@ -4,6 +4,7 @@ target_sources(kinematics
     PRIVATE
         kinematics.cpp
         kinematics.hpp
+        kinematics_constants.hpp
 )
 
 target_include_directories(kinematics

@@ -66,6 +66,7 @@ void RobotController::play_demo()
 
 void RobotController::update(float f_val, uint8_t uart_data[7])
 {
+    // move arm depending on sent data
     float displacement[7];
     for (uint8_t i = 0; i < SERVO_COUNT; i++) {
         if (uart_data[i] == 1) {

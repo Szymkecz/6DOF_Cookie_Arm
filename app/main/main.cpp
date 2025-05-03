@@ -5,16 +5,15 @@
 #include "tim.h"
 #include "usart.h"
 
+#include "kinematics.hpp"
 #include "robot_controller.hpp"
 #include "servo_manager.hpp"
 #include "stdio.h"
 #include "string.h"
-#include "kinematics.hpp"
 
 uint8_t UART2_rxBuffer[21] = {0};
 volatile bool is_htim3_time_done = false;
 
-Eigen::Matrix4d T6_0 = Eigen::Matrix4d::Identity();
 float f_val;
 uint8_t uart_data[7];
 
@@ -87,7 +86,10 @@ int main()
             //         ServoManager::SrvArray[5].get_curr_angle() +
             //         uart_data[5]);
             // }
-            printf("%.1f\r\n",T6_0(0,0));
+            std::array<double, 7> setup = {0.0};
+            Kinematics::calcT6_0(setup);
+            // Kinematics::print_fk();
+            Kinematics::print_cords();
             Controller.update(f_val, uart_data);
             is_htim3_time_done = false;
         }

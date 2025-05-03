@@ -15,6 +15,7 @@ target_link_libraries(robot_controller
     PUBLIC
         stm32cubemx
         servo_manager
+        kinematics
 )
 
 target_compile_options(robot_controller

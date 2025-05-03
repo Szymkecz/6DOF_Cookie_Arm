@@ -1,5 +1,6 @@
 
 #include "robot_controller.hpp"
+#include "kinematics.hpp"
 
 void RobotController::init()
 {
@@ -79,5 +80,7 @@ void RobotController::update(float f_val, uint8_t uart_data[7])
         angles[i] += static_cast<double>(displacement[i]);
     }
 
+    Kinematics::calc_T6_0(this->angles);
+    Kinematics::print_cords();
     ServoManager::set_angles(this->angles);
 }

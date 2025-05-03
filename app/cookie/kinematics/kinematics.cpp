@@ -11,9 +11,10 @@ namespace Kinematics {
     Eigen::Matrix<double, 6, 1> angles;
     Eigen::Matrix<double, 6, 1> cords;
     Eigen::Matrix4d T6_0 = Eigen::Matrix4d::Identity();
-    Eigen::Matrix<double, 6, 6> jacobian;
+    Eigen::Matrix<double, 6, 6> jacobian = Matrix<double, 6, 6>::Identity();
 
-    Matrix4d DhTransform(double a_i, double alpha_i, double d_i, double theta_i)
+    Matrix4d
+    dh_transform(double a_i, double alpha_i, double d_i, double theta_i)
     {
         Matrix4d A = Matrix4d::Zero();
 
@@ -31,7 +32,7 @@ namespace Kinematics {
 
         return A;
     }
-    void calcT6_0(std::array<double, 7>& angles)
+    void calc_T6_0(std::array<double, 7>& angles)
     {
         // Create temp variables
         std::array<double, 6> q{};
@@ -45,7 +46,7 @@ namespace Kinematics {
         std::array<Eigen::Matrix4d, num_matrices> A_matrices;
 
         for (uint8_t i = 0; i < num_matrices; i++) {
-            A_matrices[i] = DhTransform(a_i[i], alpha_i[i], d_i[i], q[i]);
+            A_matrices[i] = dh_transform(a_i[i], alpha_i[i], d_i[i], q[i]);
         }
 
         Eigen::Matrix4d temp = A_matrices[0];
@@ -56,9 +57,8 @@ namespace Kinematics {
         T6_0 = temp;
         set_cords(T6_0);
     }
-    void calcJacobian(std::array<double, 7>& angles)
+    void calc_jacobian(std::array<double, 7>& angles)
     {
-        // Create temp variables
         // Create temp variables
         std::array<double, 6> q{};
 
@@ -71,7 +71,7 @@ namespace Kinematics {
         std::array<Eigen::Matrix4d, num_matrices> A_matrices;
 
         for (uint8_t i = 0; i < num_matrices; i++) {
-            A_matrices[i] = DhTransform(a_i[i], alpha_i[i], d_i[i], q[i]);
+            A_matrices[i] = dh_transform(a_i[i], alpha_i[i], d_i[i], q[i]);
         }
 
         // Jacobian pi and zi-1 calculation
@@ -152,6 +152,24 @@ namespace Kinematics {
             printf(buffer);
         }
 
+        printf("----------------\r\n");
+    }
+    void print_jacobian()
+    {
+        char buffer[128];
+
+        printf("jacobian\r\n");
+        for (int i = 0; i < 6; ++i) {
+            sprintf(buffer,
+                    "[%.3f, %.3f, %.3f, %.3f, %.3f, %.3f]\r\n",
+                    Kinematics::jacobian(i, 0),
+                    Kinematics::jacobian(i, 1),
+                    Kinematics::jacobian(i, 2),
+                    Kinematics::jacobian(i, 3),
+                    Kinematics::jacobian(i, 4),
+                    Kinematics::jacobian(i, 5));
+            printf(buffer);
+        }
         printf("----------------\r\n");
     }
 } // namespace Kinematics

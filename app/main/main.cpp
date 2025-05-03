@@ -86,10 +86,15 @@ int main()
             //         ServoManager::SrvArray[5].get_curr_angle() +
             //         uart_data[5]);
             // }
+
             std::array<double, 7> setup = {0.0};
-            Kinematics::calcT6_0(setup);
-            // Kinematics::print_fk();
-            Kinematics::print_cords();
+
+            // // Kinematics::calc_T6_0(setup);
+            // Kinematics::calc_jacobian(setup);
+            // // Kinematics::print_fk();
+            // // Kinematics::print_cords();
+            // Kinematics::print_jacobian();
+
             Controller.update(f_val, uart_data);
             is_htim3_time_done = false;
         }

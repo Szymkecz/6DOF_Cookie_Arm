@@ -17,6 +17,12 @@ public:
 private:
     array<double, SERVO_COUNT> angles = {0.0};
     RobotMode current_mode = RobotMode::Jog;
+
+    // ptp
+    bool is_calc_done = false;
+    bool is_step_done = false;
+    uint8_t current_step = 0;
+    double kp = 0.05;
 };
 
 #endif // ROBOT_CONTROLLER_HPP

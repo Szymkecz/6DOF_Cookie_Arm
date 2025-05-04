@@ -1,6 +1,8 @@
 
 #include "robot_controller.hpp"
 #include "kinematics.hpp"
+#include "servo_manager.hpp"
+#include <array>
 
 using namespace Eigen;
 
@@ -129,9 +131,39 @@ void RobotController::update(float f_val, uint8_t uart_data[7])
             //     ServoManager::set_angles(this->angles);
             //     break;
 
-        case RobotMode::Ptp_demo:
+        case RobotMode::Ptp_demo: {
+            std::array<std::array<double, SERVO_COUNT>, 5> trajectory = {
+                {{90.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                 {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+                 {2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
+                 {3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0},
+                 {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}}};
+            uint16_t max_elem;
+            std::array<double, SERVO_COUNT> dq = {0.0};
 
-            break;
+            if (!is_calc_done) {
+                max_elem = *std::max_element(trajectory[current_step].begin(),
+                                             trajectory[current_step].end());
+                // printf("%u\n", (unsigned int)max_elem);
+                // kp = max_element;
+                is_calc_done = true;
+            } else {
+                for (uint8_t i = 0; i < SERVO_COUNT; ++i) {
+                    if (i == 0) {
+                        this->angles[i] +=
+                            std::max(kp * (trajectory[current_step][i] -
+                                           this->angles[i]),
+                                     1.0);
+                        continue;
+                    }
+                    this->angles[i] +=
+                        kp * (trajectory[current_step][i] - this->angles[i]);
+                }
+            }
+
+            ServoManager::set_angles(this->angles);
+            ServoManager::print_angles();
+        } break;
         default:
             break;
     }

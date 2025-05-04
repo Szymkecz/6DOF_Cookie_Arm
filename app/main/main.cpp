@@ -19,7 +19,7 @@ uint8_t uart_data[7];
 
 bool parse_uart_message(const char* msg, float* f_val, uint8_t uart_data[7])
 {
-    if (strncmp(msg, "JN[", 3) != 0)
+    /* if (strncmp(msg, "JN[", 3) != 0)
         return false; // check prefix
 
     // Temporary variables
@@ -48,7 +48,60 @@ bool parse_uart_message(const char* msg, float* f_val, uint8_t uart_data[7])
         uart_data[i] = (uint8_t)temp_array[i];
     }
 
-    return true;
+    return true; */
+
+    // Remove trailing spaces (optional)
+    char trimmed[22]; // 21 chars + null terminator
+    strncpy(trimmed, msg, 21);
+    trimmed[21] = '\0'; // Ensure null-terminated
+
+    // Optionally trim trailing whitespace
+    for (int i = 20; i >= 0; --i) {
+        if (trimmed[i] == ' ' || trimmed[i] == '\0') {
+            trimmed[i] = '\0';
+        } else {
+            break;
+        }
+    }
+
+    // Type 1: Joint movement message
+    if (strncmp(trimmed, "JN[", 3) == 0) {
+        float temp_float;
+        int temp_array[7];
+
+        int parsed = sscanf(trimmed,
+                            "JN[%f,%d,%d,%d,%d,%d,%d,%d];",
+                            &temp_float,
+                            &temp_array[0],
+                            &temp_array[1],
+                            &temp_array[2],
+                            &temp_array[3],
+                            &temp_array[4],
+                            &temp_array[5],
+                            &temp_array[6]);
+
+        if (parsed != 8)
+            return false;
+
+        *f_val = temp_float;
+        for (int i = 0; i < 7; ++i) {
+            uart_data[i] = (uint8_t)temp_array[i];
+        }
+        return true;
+    }
+
+    // Type 2: POWER_ON command
+    if (strncmp(trimmed, "POWER_ON;", 9) == 0) {
+        HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_RESET);
+        return true;
+    }
+    if (strncmp(trimmed, "POWER_OFF;", 10) == 0) {
+        HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_SET);
+        return true;
+    }
+
+    // Add more types here (e.g. "STOP;", "RESET;", etc.)
+    return false;
 }
 
 int main()
@@ -66,7 +119,7 @@ int main()
     // GLOBAL REACH
     // HAL_ADC_Start_DMA(&hadc1, &adc_buffor, 1);
     HAL_TIM_Base_Start_IT(&htim3);
-    HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_RESET); // ON
 
     RobotController Controller;
     Controller.init();

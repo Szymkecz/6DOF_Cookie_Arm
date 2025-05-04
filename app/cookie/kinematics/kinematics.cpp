@@ -1,6 +1,6 @@
 #include "kinematics.hpp"
 #include "kinematics_constants.hpp"
-#include <Eigen/Dense>
+// #include <Eigen/Dense>
 #include <array>
 #include <cmath>
 
@@ -111,20 +111,45 @@ namespace Kinematics {
         // set x,y,z, calculate Rz, Ry, Rx
         set_cords(T6_0);
     }
+    Eigen::Matrix<double, 6, 6> calc_inv_jacobian()
+    {
+        constexpr double lambda = 0.01;
+        const auto& J = Kinematics::jacobian;
+
+        Matrix<double, 6, 6> identity = Matrix<double, 6, 6>::Identity();
+        Matrix<double, 6, 6> JJT = J * J.transpose();
+        Matrix<double, 6, 6> damped = JJT + lambda * lambda * identity;
+
+        return J.transpose() * damped.inverse();
+    }
     void set_cords(Eigen::Matrix4d& A)
     {
         Kinematics::cords.segment<3>(0) = A.block<3, 1>(0, 3);
 
-        // Extract the rotation matrix
-        Eigen::Matrix3d rotationMatrix = A.block<3, 3>(0, 0);
+        // // Extract the rotation matrix
+        // Eigen::Matrix3d rotationMatrix = A.block<3, 3>(0, 0);
 
-        // Compute the ZYX Euler angles (yaw, pitch, roll)
-        Eigen::Vector3d eulerAngles = rotationMatrix.eulerAngles(2, 1, 0);
+        // // Compute the ZYX Euler angles (yaw, pitch, roll)
+        // Eigen::Vector3d eulerAngles = rotationMatrix.eulerAngles(2, 1, 0);
 
-        // Assign the Euler angles to the cords vector
-        Kinematics::cords.segment<3>(3) = eulerAngles;
+        // // Assign the Euler angles to the cords vector
+        // Kinematics::cords.segment<3>(3) = eulerAngles;
+
+        // diffrent kind of euler angles
+        //  Manual extraction of ZYX Euler angles (yaw-pitch-roll)
+        Eigen::Matrix3d R = A.block<3, 3>(0, 0);
+
+        double roll = std::atan2(R(2, 1), R(2, 2)); // X-axis rotation (ϕ)
+        double pitch =
+            std::atan2(-R(2, 0),
+                       std::sqrt(std::pow(R(0, 0), 2) +
+                                 std::pow(R(1, 0), 2))); // Y-axis rotation (θ)
+        double yaw = std::atan2(R(1, 0), R(0, 0));
+
+        Kinematics::cords.segment<3>(3) = Vector3d(yaw, pitch, roll);
     }
 
+#ifdef DEBUG
     // print functions
     void print_fk()
     {
@@ -172,4 +197,5 @@ namespace Kinematics {
         }
         printf("----------------\r\n");
     }
+#endif // DEBUG
 } // namespace Kinematics

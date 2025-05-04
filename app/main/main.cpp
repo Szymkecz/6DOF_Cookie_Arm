@@ -87,7 +87,7 @@ int main()
             //         uart_data[5]);
             // }
 
-            std::array<double, 7> setup = {0.0};
+            // std::array<double, 7> setup = {0.0};
 
             // // Kinematics::calc_T6_0(setup);
             // Kinematics::calc_jacobian(setup);

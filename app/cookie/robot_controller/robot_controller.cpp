@@ -2,12 +2,21 @@
 #include "robot_controller.hpp"
 #include "kinematics.hpp"
 
+using namespace Eigen;
+
 void RobotController::init()
 {
     ServoManager::init();
     ServoManager::set_angles(this->angles);
     ServoManager::print_servo_config();
+    Kinematics::calc_T6_0(this->angles);
+
     HAL_Delay(200);
+
+    // WATCH OUT!!!!!!!!!!!!!!
+    // angles[0] = 90;
+    // angles[4] = 2;
+    //---------------------
 }
 
 void RobotController::play_demo()
@@ -67,20 +76,63 @@ void RobotController::play_demo()
 
 void RobotController::update(float f_val, uint8_t uart_data[7])
 {
-    // move arm depending on sent data
-    float displacement[7];
-    for (uint8_t i = 0; i < SERVO_COUNT; i++) {
-        if (uart_data[i] == 1) {
-            displacement[i] = f_val;
-        } else if (uart_data[i] == 2) {
-            displacement[i] = -f_val;
-        } else {
-            displacement[i] = 0;
-        }
-        angles[i] += static_cast<double>(displacement[i]);
-    }
+    // // ptp - variables
+    // Matrix<double, 6, 1> destination;
+    // Matrix<double, 6, 1> delta_x;
+    // Matrix<double, 6, 1> dq;
+    // static bool is_done = false;
 
-    Kinematics::calc_T6_0(this->angles);
-    Kinematics::print_cords();
-    ServoManager::set_angles(this->angles);
+    switch (current_mode) {
+        case RobotMode::Jog:
+            // move arm depending on sent data
+            float displacement[7];
+            for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+                if (uart_data[i] == 1) {
+                    displacement[i] = f_val;
+                } else if (uart_data[i] == 2) {
+                    displacement[i] = -f_val;
+                } else {
+                    displacement[i] = 0;
+                }
+                angles[i] += static_cast<double>(displacement[i]);
+            }
+
+            Kinematics::calc_T6_0(this->angles);
+
+            // Kinematics::print_cords();
+            ServoManager::set_angles(this->angles);
+            break;
+
+            // case RobotMode::Ptp_demo:
+            //     destination << 0.000, 257.338, 307.509, -1.571, -1.536,
+            //     0.000;
+
+            //     if ((destination -
+            //     Kinematics::cords).array().abs().maxCoeff() >
+            //             1.0 &&
+            //         is_done == false) {
+            //         // step 1-2
+            //         delta_x = 0.1 * (destination - Kinematics::cords);
+            //         // step 3
+            //         Kinematics::calc_jacobian(this->angles);
+            //         // step 4-5
+            //         dq = Kinematics::calc_inv_jacobian() * delta_x ;
+            //         // step 6-7
+            //         std::array<double, 6> new_q;
+            //         for (size_t i = 0; i < 6; ++i) {
+            //             this->angles[i] += dq(i);
+            //         }
+            //         Kinematics::calc_T6_0(this->angles);
+            //     } else {
+            //         is_done = true;
+            //     }
+            //     ServoManager::set_angles(this->angles);
+            //     break;
+
+        case RobotMode::Ptp_demo:
+
+            break;
+        default:
+            break;
+    }
 }

@@ -40,7 +40,7 @@ void RobotController::play_demo()
              i += speed) {
             angles[srv_n] = i;
             ServoManager::set_angles(this->angles);
-            ServoManager::print_angles();
+            // ServoManager::print_angles();
             HAL_Delay(20);
         }
 
@@ -52,7 +52,7 @@ void RobotController::play_demo()
              i -= speed) {
             angles[srv_n] = i;
             ServoManager::set_angles(this->angles);
-            ServoManager::print_angles();
+            // ServoManager::print_angles();
             HAL_Delay(20);
         }
 
@@ -64,7 +64,7 @@ void RobotController::play_demo()
              i += speed) {
             angles[srv_n] = i;
             ServoManager::set_angles(this->angles);
-            ServoManager::print_angles();
+            // ServoManager::print_angles();
             HAL_Delay(20);
         }
 
@@ -73,7 +73,7 @@ void RobotController::play_demo()
     }
     is_done = true;
     ServoManager::set_angles(this->angles);
-    ServoManager::print_angles();
+    // ServoManager::print_angles();
 }
 
 void RobotController::update(float f_val, uint8_t uart_data[7])
@@ -100,9 +100,9 @@ void RobotController::update(float f_val, uint8_t uart_data[7])
             }
 
             Kinematics::calc_T6_0(this->angles);
-
             // Kinematics::print_cords();
             ServoManager::set_angles(this->angles);
+
             break;
 
             // case RobotMode::Ptp_demo:

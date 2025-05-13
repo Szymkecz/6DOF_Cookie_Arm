@@ -19,6 +19,8 @@ namespace Kinematics {
     Eigen::Matrix<double, 6, 6> calc_inv_jacobian();
     void set_cords(Eigen::Matrix4d& A);
 
+    // void calc_ik
+
 #ifdef DEBUG
     // print functions will only be included in debug builds
     void print_fk();

@@ -23,7 +23,7 @@ namespace ServoManager {
     // middle pos at 1475
     constexpr uint16_t J6_MIN_PWM = 500;
     constexpr uint16_t J6_MAX_PWM = 2450;
-    //GRIPPER-----------------
+    // GRIPPER-----------------
     constexpr uint16_t J7_MIN_PWM = 350;
     constexpr uint16_t J7_MAX_PWM = 2600;
     //-------------------------------------
@@ -122,7 +122,7 @@ namespace ServoManager {
     void print_servo_config()
     {
         static bool is_done = false;
-        
+
         if (is_done) {
             return;
         }

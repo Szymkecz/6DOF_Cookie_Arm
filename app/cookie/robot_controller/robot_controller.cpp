@@ -11,8 +11,9 @@ void RobotController::init()
     ServoManager::init();
     ServoManager::set_angles(this->angles);
     ServoManager::print_servo_config();
-    Kinematics::calc_T6_0(this->angles);
 
+    Kinematics::calc_T6_0(this->angles);
+    Kinematics::print_cords();
     HAL_Delay(200);
 
     // WATCH OUT!!!!!!!!!!!!!!

@@ -10,8 +10,10 @@ namespace Kinematics {
     // kinematics data--------------------------------
     Eigen::Matrix<double, 6, 1> angles;
     Eigen::Matrix<double, 6, 1> cords;
-    Eigen::Matrix4d T6_0 = Eigen::Matrix4d::Identity();
+    // local
+    Eigen::Matrix4d T6_0 = Matrix4d::Identity();
     Eigen::Matrix<double, 6, 6> jacobian = Matrix<double, 6, 6>::Identity();
+    Eigen::Matrix4d Ttool_6 = Matrix4d::Identity();
 
     Matrix4d
     dh_transform(double a_i, double alpha_i, double d_i, double theta_i)
@@ -126,14 +128,14 @@ namespace Kinematics {
     {
         Kinematics::cords.segment<3>(0) = A.block<3, 1>(0, 3);
 
-        // // Extract the rotation matrix
-        // Eigen::Matrix3d rotationMatrix = A.block<3, 3>(0, 0);
+        /* // Extract the rotation matrix
+        Eigen::Matrix3d rotationMatrix = A.block<3, 3>(0, 0);
 
-        // // Compute the ZYX Euler angles (yaw, pitch, roll)
-        // Eigen::Vector3d eulerAngles = rotationMatrix.eulerAngles(2, 1, 0);
+        // Compute the ZYX Euler angles (yaw, pitch, roll)
+        Eigen::Vector3d eulerAngles = rotationMatrix.eulerAngles(2, 1, 0);
 
-        // // Assign the Euler angles to the cords vector
-        // Kinematics::cords.segment<3>(3) = eulerAngles;
+        // Assign the Euler angles to the cords vector
+        Kinematics::cords.segment<3>(3) = eulerAngles; */
 
         // diffrent kind of euler angles
         //  Manual extraction of ZYX Euler angles (yaw-pitch-roll)
@@ -149,7 +151,88 @@ namespace Kinematics {
         Kinematics::cords.segment<3>(3) = Vector3d(yaw, pitch, roll);
     }
 
-#ifdef DEBUG
+    // for Inverse kinematics calculation
+    Eigen::Matrix4d cords_to_T6_0(Eigen::Matrix<double, 6, 1>& cords)
+    {
+        Matrix4d temp = Eigen::Matrix4d::Identity();
+        // 1srt row
+        temp(0, 0) = cos(cords(3)) * cos(cords(4));
+        temp(0, 1) = cos(cords(3)) * sin(cords(4)) * sin(cords(5)) -
+                     sin(cords(3)) * cos(cords(5));
+        temp(0, 2) = cos(cords(3)) * sin(cords(4)) * sin(cords(5)) +
+                     sin(cords(3)) * cos(cords(5));
+
+        // 2nd row
+        temp(1, 0) = sin(cords(3)) * cos(cords(4));
+        temp(1, 1) = sin(cords(3)) * sin(cords(4)) * sin(cords(5)) +
+                     sin(cords(3)) * cos(cords(5));
+        temp(1, 2) = sin(cords(3)) * sin(cords(4)) * sin(cords(5)) -
+                     sin(cords(3)) * cos(cords(5));
+        // 3rd row
+        temp(2, 0) = -sin(cords(4));
+        temp(2, 1) = cos(cords(4)) * sin(cords(5));
+        temp(2, 2) = cos(cords(4)) * cos(cords(5));
+
+        return temp;
+    }
+    void inverse_kinematics(Eigen::Matrix<double, 6, 1>& cords)
+    {
+        // calculate from Ttool_0 to T5_0
+        Eigen::Matrix4d temp = cords_to_T6_0(cords);
+
+        Eigen::Matrix4d inv_Ttool;
+        inv_Ttool = Matrix4d::Identity();
+
+        Eigen::Matrix3d R_inv_tool = Ttool_6.block<3, 3>(0, 0).transpose();
+        // FIX THE CODE
+        //  inv_Ttool =
+
+        // R 0-6 reverse kin
+        temp = temp * inv_Ttool;
+        // R 0-6 negate
+        Matrix4d T5_6 = Matrix4d::Identity();
+        T5_6(2, 3) = -d_i[5];
+
+        // R 0-5 reverse kin    (center spherical wrist)
+        temp = temp * T5_6;
+
+        // calculate theta1,2,3-------------------------------
+        // theta1
+        angles[0] = RAD2DEG * atan2(temp(1, 3), temp(0, 3));
+
+        // theta2,3
+        double new_x = temp(0, 3) * cos(cords[0]) - temp(1, 3) * sin(cords[0]);
+        double new_y = temp(1, 3) * cos(cords[0]) + temp(0, 3) * sin(cords[0]);
+
+        double L1, L2, L3, L4, theta_B, theta_C, theta_D, theta_E;
+        L1 = abs(new_x - a_i[0]);
+        L4 = temp(2, 3) - d_i[0];
+        L2 = sqrt(pow(L1, 2) + pow(L4, 2));
+        L3 = sqrt(pow(d_i[3], 2) + pow(a_i[2], 2));
+        theta_B = atan(L1 / L4);
+        theta_C = acos((pow(a_i[1], 2) + pow(L2, 2) - pow(L3, 2)) /
+                       (2 * L2 * a_i[1]));
+        theta_D = acos((pow(L3, 2) + pow(a_i[1], 2) - pow(L2, 2)) /
+                       (2 * L3 * a_i[1]));
+        theta_E = atan(a_i[2] / d_i[3]);
+
+        // theta2 calc
+        if (new_x > a_i[0]) {
+            if (L4 > 0) {
+                angles[1] = (theta_B - theta_C) * RAD2DEG;
+            } else {
+                angles[1] = (theta_B - theta_C) * RAD2DEG + 180;
+            }
+
+        } else {
+            angles[1] = -(theta_B + theta_C) * RAD2DEG;
+        }
+
+        // theta3 calc
+        angles[2] = -(theta_D + theta_E) * RAD2DEG + 90;
+    }
+
+    // #ifdef DEBUG
     // print functions
     void print_fk()
     {
@@ -171,13 +254,20 @@ namespace Kinematics {
     {
         char buffer[128];
 
-        printf("cords_vector\r\n");
-        for (uint8_t i = 0; i < 6; ++i) {
-            sprintf(buffer, "[%.3f]\r\n", Kinematics::cords(i));
-            printf(buffer);
-        }
+        /*   printf("cords_vector\r\n");
+          for (uint8_t i = 0; i < 6; ++i) {
+              sprintf(buffer, "[%.3f]\r\n", Kinematics::cords(i));
+              printf(buffer);
+          }
 
-        printf("----------------\r\n");
+          printf("----------------\r\n"); */
+        printf("CC[%.1f,%.1f,%.1f,%.1f,%.1f,%.1f];\r\n",
+               Kinematics::cords[0],
+               Kinematics::cords[1],
+               Kinematics::cords[2],
+               Kinematics::cords[3] * RAD2DEG,
+               Kinematics::cords[4] * RAD2DEG,
+               Kinematics::cords[5] * RAD2DEG);
     }
     void print_jacobian()
     {
@@ -197,5 +287,5 @@ namespace Kinematics {
         }
         printf("----------------\r\n");
     }
-#endif // DEBUG
+    // #endif // DEBUG
 } // namespace Kinematics

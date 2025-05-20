@@ -9,8 +9,8 @@ namespace Kinematics {
     // kinematics data-------------------------------
     extern Eigen::Matrix<double, 6, 1> angles; // maybe useless
     extern Eigen::Matrix<double, 6, 1> cords;
-    extern Eigen::Matrix4d T6_0;
-    extern Eigen::Matrix<double, 6, 6> jacobian;
+    // extern Eigen::Matrix4d T6_0;
+    // extern Eigen::Matrix<double, 6, 6> jacobian;
 
     Eigen::Matrix4d
     dh_transform(double a_i, double alpha_i, double d_i, double theta_i);
@@ -19,7 +19,8 @@ namespace Kinematics {
     Eigen::Matrix<double, 6, 6> calc_inv_jacobian();
     void set_cords(Eigen::Matrix4d& A);
 
-    // void calc_ik
+    Eigen::Matrix4d cords_to_T6_0(Eigen::Matrix<double, 6, 1>& cords);
+    void inverse_kinematics(Eigen::Matrix<double, 6, 1>& cords);
 
 #ifdef DEBUG
     // print functions will only be included in debug builds

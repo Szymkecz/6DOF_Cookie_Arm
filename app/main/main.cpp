@@ -130,12 +130,12 @@ int main()
     Controller.init();
 
     HAL_UART_Receive_DMA(&huart2, UART2_rxBuffer, 21);
-    HAL_UART_Transmit_DMA(&huart2, UART2_txBuffer, sizeof(UART2_txBuffer));
+    // HAL_UART_Transmit_DMA(&huart2, UART2_txBuffer, sizeof(UART2_txBuffer));
 
     while (true) {
         if (is_htim3_time_done) {
             // ServoManager::print_angles();
-
+            Kinematics::print_cords();
             Controller.update(f_val, uart_data);
             // Controller.play_demo();
             // ServoManager::print_angles();
@@ -179,46 +179,46 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
     }
 }
 
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart)
-{
-    if (huart->Instance == USART2) // Make sure it's USART2
-    {
-        // Get the current angles (assuming ServoManager::get_curr_angles()
-        // returns a std::array or similar)
-        std::array<double, 7> cr_ang = ServoManager::get_curr_angles();
+// void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart)
+// {
+//     if (huart->Instance == USART2) // Make sure it's USART2
+//     {
+//         // Get the current angles (assuming ServoManager::get_curr_angles()
+//         // returns a std::array or similar)
+//         std::array<double, 7> cr_ang = ServoManager::get_curr_angles();
 
-        // Define the buffer for the message (54 bytes as per your setting)
-        char buff[54] = {0}; // Initialize the buffer with zeroes (empty space)
+//         // Define the buffer for the message (54 bytes as per your setting)
+//         char buff[54] = {0}; // Initialize the buffer with zeroes (empty space)
 
-        // Format the message using snprintf
-        int message_length =
-            snprintf(buff,
-                     sizeof(buff) - 3, // Ensure space for \r\n at the end
-                     "JC[%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f];",
-                     cr_ang[0],
-                     cr_ang[1],
-                     cr_ang[2],
-                     cr_ang[3],
-                     cr_ang[4],
-                     cr_ang[5],
-                     cr_ang[6]);
+//         // Format the message using snprintf
+//         int message_length =
+//             snprintf(buff,
+//                      sizeof(buff) - 3, // Ensure space for \r\n at the end
+//                      "JC[%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f];",
+//                      cr_ang[0],
+//                      cr_ang[1],
+//                      cr_ang[2],
+//                      cr_ang[3],
+//                      cr_ang[4],
+//                      cr_ang[5],
+//                      cr_ang[6]);
 
-        // Ensure the message fits within the buffer (leaving space for \r\n)
-        if (message_length < sizeof(buff) - 2) {
-            // Pad the remaining space with spaces, leaving space for \r\n
-            memset(buff + message_length,
-                   ' ',
-                   sizeof(buff) - message_length - 2);
-        }
+//         // Ensure the message fits within the buffer (leaving space for \r\n)
+//         if (message_length < sizeof(buff) - 2) {
+//             // Pad the remaining space with spaces, leaving space for \r\n
+//             memset(buff + message_length,
+//                    ' ',
+//                    sizeof(buff) - message_length - 2);
+//         }
 
-        // Add \r\n at the end of the message
-        buff[sizeof(buff) - 2] = '\r'; // Carriage return
-        buff[sizeof(buff) - 1] = '\n'; // Newline
+//         // Add \r\n at the end of the message
+//         buff[sizeof(buff) - 2] = '\r'; // Carriage return
+//         buff[sizeof(buff) - 1] = '\n'; // Newline
 
-        // Now copy the padded buffer to UART2_txBuffer
-        memcpy(UART2_txBuffer, buff, sizeof(buff));
+//         // Now copy the padded buffer to UART2_txBuffer
+//         memcpy(UART2_txBuffer, buff, sizeof(buff));
 
-        // Transmit via DMA
-        HAL_UART_Transmit_DMA(&huart2, UART2_txBuffer, sizeof(UART2_txBuffer));
-    }
-}
+//         // Transmit via DMA
+//         HAL_UART_Transmit_DMA(&huart2, UART2_txBuffer, sizeof(UART2_txBuffer));
+//     }
+// }

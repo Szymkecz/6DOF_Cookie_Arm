@@ -12,7 +12,7 @@ public:
 
     void init();
     void play_demo();
-    void update(float f_val, uint8_t uart_data[SERVO_COUNT]);
+    void update(float f_val, uint8_t uart_data[SERVO_COUNT], char jog_type);
 
 private:
     array<double, SERVO_COUNT> angles = {0.0};

@@ -23,7 +23,7 @@ volatile bool is_htim3_time_done = false;
 // float f_val;
 // uint8_t uart_data[7];
 
-bool parse_uart_message(const char* msg, float* f_val, uint8_t uart_data[7])
+/* bool parse_uart_message(const char* msg, float* f_val, uint8_t uart_data[7])
 {
     // Remove trailing spaces (optional)
     char trimmed[22]; // 21 chars + null terminator
@@ -83,6 +83,7 @@ bool parse_uart_message(const char* msg, float* f_val, uint8_t uart_data[7])
 
     return false;
 }
+ */
 
 int main()
 {
@@ -111,7 +112,7 @@ int main()
         if (is_htim3_time_done) {
             ServoManager::print_angles();
             Kinematics::print_cords();
-            Controller.update(f_val, uart_data);
+            Controller.update(f_val, uart_data,jog_type);
             // Controller.play_demo();
             // ServoManager::print_angles();
 
@@ -121,8 +122,8 @@ int main()
     return 0;
 }
 
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
+ 
+/* void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 {
     if (huart->Instance == USART2) // Make sure it's USART2
     {
@@ -146,7 +147,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
         // Re-arm the DMA to receive the next message
         HAL_UART_Receive_DMA(&huart2, UART2_rxBuffer, 21);
     }
-}
+} */
 
 // void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart)
 // {

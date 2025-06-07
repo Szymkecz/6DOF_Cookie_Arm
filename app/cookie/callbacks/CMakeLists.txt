@@ -14,6 +14,8 @@ target_include_directories(callbacks
 target_link_libraries(callbacks
     PUBLIC
         stm32cubemx
+        kinematics
+        servo_manager
 )
 
 target_compile_options(callbacks

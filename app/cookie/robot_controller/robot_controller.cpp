@@ -9,10 +9,11 @@ using namespace Eigen;
 void RobotController::init()
 {
     ServoManager::init();
-    ServoManager::set_angles(this->angles);
+    std::array<double, SERVO_COUNT> init_angles = {};
+    ServoManager::set_angles(init_angles);
     ServoManager::print_servo_config();
 
-    Kinematics::calc_T6_0(this->angles);
+    Kinematics::calc_T6_0(init_angles);
     Kinematics::print_cords();
     HAL_Delay(200);
 
@@ -77,7 +78,7 @@ void RobotController::play_demo()
     // ServoManager::print_angles();
 }
 
-void RobotController::update(float f_val, uint8_t uart_data[7])
+void RobotController::update(float f_val, uint8_t uart_data[7], char jog_type)
 {
     // // ptp - variables
     // Matrix<double, 6, 1> destination;
@@ -87,25 +88,26 @@ void RobotController::update(float f_val, uint8_t uart_data[7])
 
     switch (current_mode) {
         case RobotMode::Jog:
-
-            std::array<double,SERVO_COUNT> new_angles;
-            new_angles = ServoManager::get_curr_angles();
-            // move arm depending on sent data
-            float displacement[7];
-            for (uint8_t i = 0; i < SERVO_COUNT; i++) {
-                if (uart_data[i] == 1) {
-                    displacement[i] = f_val;
-                } else if (uart_data[i] == 2) {
-                    displacement[i] = -f_val;
-                } else {
-                    displacement[i] = 0;
+            if (jog_type == 'j') {
+                std::array<double, SERVO_COUNT> new_angles;
+                new_angles = ServoManager::get_curr_angles();
+                // move arm depending on sent data
+                float displacement[7];
+                for (uint8_t i = 0; i < SERVO_COUNT; i++) {
+                    if (uart_data[i] == 1) {
+                        displacement[i] = f_val;
+                    } else if (uart_data[i] == 2) {
+                        displacement[i] = -f_val;
+                    } else {
+                        displacement[i] = 0;
+                    }
+                    new_angles[i] += static_cast<double>(displacement[i]);
                 }
-                new_angles[i] += static_cast<double>(displacement[i]);
-            }
 
-            Kinematics::calc_T6_0(new_angles);
-            // Kinematics::print_cords();
-            ServoManager::set_angles(new_angles);
+                Kinematics::calc_T6_0(new_angles);
+                // Kinematics::print_cords();
+                ServoManager::set_angles(new_angles);
+            }
 
             break;
 
@@ -136,7 +138,7 @@ void RobotController::update(float f_val, uint8_t uart_data[7])
             //     break;
 
         case RobotMode::Ptp_demo: {
-             std::array<std::array<double, SERVO_COUNT>, 5> trajectory = {
+            std::array<std::array<double, SERVO_COUNT>, 5> trajectory = {
                 {{90.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
                  {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
                  {2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0},
@@ -166,7 +168,7 @@ void RobotController::update(float f_val, uint8_t uart_data[7])
             }
 
             ServoManager::set_angles(this->angles);
-            ServoManager::print_angles(); 
+            ServoManager::print_angles();
         } break;
         default:
             break;

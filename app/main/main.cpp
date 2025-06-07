@@ -5,6 +5,7 @@
 #include "tim.h"
 #include "usart.h"
 
+#include "callbacks.hpp"
 #include "kinematics.hpp"
 #include "robot_controller.hpp"
 #include "servo_manager.hpp"
@@ -15,12 +16,12 @@
 #include <array>
 // ------------------
 
-uint8_t UART2_rxBuffer[21] = {0};
+/* uint8_t UART2_rxBuffer[21] = {0};
 uint8_t UART2_txBuffer[54] = {0};
 volatile bool is_htim3_time_done = false;
-
-float f_val;
-uint8_t uart_data[7];
+ */
+// float f_val;
+// uint8_t uart_data[7];
 
 bool parse_uart_message(const char* msg, float* f_val, uint8_t uart_data[7])
 {
@@ -104,6 +105,14 @@ bool parse_uart_message(const char* msg, float* f_val, uint8_t uart_data[7])
         HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_RESET);
         return true;
     }
+    if (strncmp(trimmed, "RESET;", 6) == 0) {
+        // for (uint8_t i = 0; i < 7; i++)
+        // {
+
+        // }
+        HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_RESET);
+        return true;
+    }
 
     // Add more types here (e.g. "STOP;", "RESET;", etc.)
     return false;
@@ -134,24 +143,24 @@ int main()
 
     while (true) {
         if (is_htim3_time_done) {
-            // ServoManager::print_angles();
+            ServoManager::print_angles();
             Kinematics::print_cords();
             Controller.update(f_val, uart_data);
             // Controller.play_demo();
             // ServoManager::print_angles();
-            
+
             is_htim3_time_done = false;
         }
     }
     return 0;
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
-{
-    if (htim->Instance == TIM3) {
-        is_htim3_time_done = true;
-    }
-}
+// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
+// {
+//     if (htim->Instance == TIM3) {
+//         is_htim3_time_done = true;
+//     }
+// }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 {
@@ -188,7 +197,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 //         std::array<double, 7> cr_ang = ServoManager::get_curr_angles();
 
 //         // Define the buffer for the message (54 bytes as per your setting)
-//         char buff[54] = {0}; // Initialize the buffer with zeroes (empty space)
+//         char buff[54] = {0}; // Initialize the buffer with zeroes (empty
+//         space)
 
 //         // Format the message using snprintf
 //         int message_length =
@@ -219,6 +229,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 //         memcpy(UART2_txBuffer, buff, sizeof(buff));
 
 //         // Transmit via DMA
-//         HAL_UART_Transmit_DMA(&huart2, UART2_txBuffer, sizeof(UART2_txBuffer));
+//         HAL_UART_Transmit_DMA(&huart2, UART2_txBuffer,
+//         sizeof(UART2_txBuffer));
 //     }
 // }

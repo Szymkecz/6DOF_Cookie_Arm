@@ -28,6 +28,8 @@ add_subdirectory(app/cookie/servo_lib)
 add_subdirectory(app/cookie/servo_manager)
 add_subdirectory(app/cookie/robot_controller)
 add_subdirectory(app/cookie/kinematics)
+add_subdirectory(app/cookie/callbacks)
+add_subdirectory(app/cookie/uart)
 
 target_compile_options(stm32cubemx INTERFACE 
     -w

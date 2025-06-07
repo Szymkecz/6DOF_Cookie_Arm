@@ -14,6 +14,8 @@ target_link_libraries(app PRIVATE
     servo_manager
     robot_controller
     kinematics
+    callbacks
+    uart
     )
 
 target_compile_options(app PUBLIC

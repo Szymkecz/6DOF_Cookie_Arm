@@ -25,37 +25,6 @@ volatile bool is_htim3_time_done = false;
 
 bool parse_uart_message(const char* msg, float* f_val, uint8_t uart_data[7])
 {
-    /* if (strncmp(msg, "JN[", 3) != 0)
-        return false; // check prefix
-
-    // Temporary variables
-    float temp_float;
-    int temp_array[7];
-
-    // Parse using sscanf
-    int parsed = sscanf(msg,
-                        "JN[%f,%d,%d,%d,%d,%d,%d,%d];",
-                        &temp_float,
-                        &temp_array[0],
-                        &temp_array[1],
-                        &temp_array[2],
-                        &temp_array[3],
-                        &temp_array[4],
-                        &temp_array[5],
-                        &temp_array[6]);
-
-    if (parsed != 8)
-        return false; // Make sure we got all 8 values
-
-    *f_val = temp_float;
-
-    // Copy into uint8_t array
-    for (int i = 0; i < 7; ++i) {
-        uart_data[i] = (uint8_t)temp_array[i];
-    }
-
-    return true; */
-
     // Remove trailing spaces (optional)
     char trimmed[22]; // 21 chars + null terminator
     strncpy(trimmed, msg, 21);
@@ -106,15 +75,12 @@ bool parse_uart_message(const char* msg, float* f_val, uint8_t uart_data[7])
         return true;
     }
     if (strncmp(trimmed, "RESET;", 6) == 0) {
-        // for (uint8_t i = 0; i < 7; i++)
-        // {
-
-        // }
-        HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_RESET);
+        std::array<double, SERVO_COUNT> reset_angles = {0.0};
+        ServoManager::set_angles(reset_angles);
+        Kinematics::calc_T6_0(reset_angles);
         return true;
     }
 
-    // Add more types here (e.g. "STOP;", "RESET;", etc.)
     return false;
 }
 
@@ -155,12 +121,6 @@ int main()
     return 0;
 }
 
-// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
-// {
-//     if (htim->Instance == TIM3) {
-//         is_htim3_time_done = true;
-//     }
-// }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart)
 {

@@ -29,8 +29,8 @@ void RobotController::play_demo()
     static int8_t srv_n = 5; // servo number
     static float speed = 0.5;
 
-    while (!is_done && srv_n >= 2) {
-        if (srv_n >= 2) { // for j4-j6 speeds are higher
+    while (!is_done && srv_n >= 0) {
+        if (srv_n > 2) { // for j4-j6 speeds are higher
             speed = 1.0;
         } else {
             speed = 0.5;
@@ -91,6 +91,7 @@ void RobotController::update(float f_val, uint8_t uart_data[7], char jog_type)
             if (jog_type == 'j') {
                 std::array<double, SERVO_COUNT> new_angles;
                 new_angles = ServoManager::get_curr_angles();
+
                 // move arm depending on sent data
                 float displacement[7];
                 for (uint8_t i = 0; i < SERVO_COUNT; i++) {
@@ -107,6 +108,52 @@ void RobotController::update(float f_val, uint8_t uart_data[7], char jog_type)
                 Kinematics::calc_T6_0(new_angles);
                 // Kinematics::print_cords();
                 ServoManager::set_angles(new_angles);
+            } else if (jog_type == 'c') {
+                /* // temp
+                std::array<double, SERVO_COUNT> new_angles;
+                new_angles = ServoManager::get_curr_angles();
+                // move arm depending on sent data
+                float displacement[7];
+                for (uint8_t i = 0; i < SERVO_COUNT - 1; i++) {
+                    if (uart_data[i] == 1) {
+                        displacement[i] = f_val;
+                    } else if (uart_data[i] == 2) {
+                        displacement[i] = -f_val;
+                    } else {
+                        displacement[i] = 0;
+                    }
+                    new_angles[i] += static_cast<double>(displacement[i]);
+                }
+
+                Kinematics::calc_T6_0(new_angles);
+                // Kinematics::print_cords();
+                ServoManager::set_angles(new_angles); */
+
+                /* std::array<double, SERVO_COUNT> new_angles;
+                new_angles = ServoManager::get_curr_angles();
+
+                // change cords based on uart
+                float displacement[6];
+                for (uint8_t i = 0; i < SERVO_COUNT - 1; i++) {
+                    if (uart_data[i] == 1) {
+                        displacement[i] = f_val;
+                    } else if (uart_data[i] == 2) {
+                        displacement[i] = -f_val;
+                    } else {
+                        displacement[i] = 0;
+                    }
+                    Kinematics::cords[i] +=
+                        static_cast<double>(displacement[i]);
+                }
+
+                // calculate IK
+                Kinematics::inverse_kinematics(Kinematics::cords);
+
+                // update angles
+                for (uint8_t i = 0; i < SERVO_COUNT - 1; i++) {
+                    new_angles[i] = Kinematics::angles[i];
+                }
+                ServoManager::set_angles(new_angles); */
             }
 
             break;

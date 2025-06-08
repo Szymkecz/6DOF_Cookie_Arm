@@ -7,7 +7,8 @@
 namespace Kinematics {
 
     // kinematics data-------------------------------
-    extern Eigen::Matrix<double, 6, 1> angles; // maybe useless
+    // extern Eigen::Matrix<double, 6, 1> angles; // maybe useless
+    extern std::array<double, 6> angles;
     extern Eigen::Matrix<double, 6, 1> cords;
     // extern Eigen::Matrix4d T6_0;
     // extern Eigen::Matrix<double, 6, 6> jacobian;

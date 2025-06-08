@@ -8,7 +8,8 @@ using namespace Eigen;
 namespace Kinematics {
 
     // kinematics data--------------------------------
-    Eigen::Matrix<double, 6, 1> angles;
+    // Eigen::Matrix<double, 6, 1> angles;
+    std::array<double, 6> angles;
     Eigen::Matrix<double, 6, 1> cords;
     // local
     Eigen::Matrix4d T6_0 = Matrix4d::Identity();
@@ -181,7 +182,7 @@ namespace Kinematics {
         Eigen::Matrix4d temp = cords_to_T6_0(cords);
 
         Eigen::Matrix4d inv_Ttool;
-        inv_Ttool = Matrix4d::Identity();
+        inv_Ttool = Matrix4d::Identity(); // init matrix
 
         Eigen::Matrix3d R_inv_tool = Ttool_6.block<3, 3>(0, 0).transpose();
         // FIX THE CODE
@@ -189,6 +190,7 @@ namespace Kinematics {
 
         // R 0-6 reverse kin
         temp = temp * inv_Ttool;
+
         // R 0-6 negate
         Matrix4d T5_6 = Matrix4d::Identity();
         T5_6(2, 3) = -d_i[5];

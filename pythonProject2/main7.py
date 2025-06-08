@@ -1,5 +1,7 @@
 import sys
 import math
+from time import sleep
+
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QIntValidator
 from PyQt5.QtWidgets import (
@@ -478,14 +480,14 @@ class RobotJogApp(QWidget):
     def get_scaled_linear_speed(self):
         try:
             value = int(self.linear_speed_input.text())
-            return max(5, min(100, value)) / 50.0
+            return max(5, min(100, value)) / (50*10)
         except ValueError:
             return 0.0
 
     def get_scaled_speed(self):
         try:
             value = int(self.speed_input.text())
-            return max(5, min(100, value)) / 50.0
+            return max(5, min(100, value)) / 50
         except ValueError:
             return 0.0
 
@@ -592,11 +594,11 @@ class RobotJogApp(QWidget):
                 speed = 0 if all(state == 0 for state in self.joint_press_states) else self.get_scaled_angular_speed()
                 state_str = ",".join(str(s) for s in self.joint_press_states)
                 i = 1
-                time = 0
+                time = 1
 
                 if all(state == 0 for state in self.joint_press_states):
                     state_str = "0,0,0,0,0,0,0"
-                    i = 3
+                    i = 5
                     time = 5
 
                 for a in range(i):
@@ -617,14 +619,26 @@ class RobotJogApp(QWidget):
             if self.ser:
                 speed = 0 if all(state == 0 for state in self.c_press_states) else self.get_scaled_linear_speed()
                 state_str = ",".join(str(s) for s in self.c_press_states)
+                i = 1
+                time = 1
+
 
                 if all(state == 0 for state in self.c_press_states):
-                    state_str = "0,0,0,0,0,0"
+                    state_str = "0,0,0,0,0,0,0"
+                    i = 5
+                    time = 5
 
-                message = f"CN[{speed},{state_str}];\n"
-                message = message[:21]
-                message += ' ' * (21 - len(message))
-                self.ser.write(message.encode())
+                for a in range(i):
+                    message = f"CN[{speed},{state_str}];\n"
+                    message = message[:21]
+                    message += ' ' * (21 - len(message))
+                    print(f"Wysłana wiadomość: {message.strip()}")
+                    self.ser.write(message.encode())
+                    # Czekaj
+                    loop = QEventLoop()
+                    QTimer.singleShot(time, loop.quit)
+                    loop.exec_()
+
         except Exception as e:
             print(f"Błąd CN: {e}")
 

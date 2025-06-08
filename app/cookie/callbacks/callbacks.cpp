@@ -53,14 +53,14 @@ bool parse_uart_message(const char* msg, float* f_val, uint8_t uart_data[7])
             return false;
 
         *f_val = temp_float;
-        jog_type = 'j'; //move in joint space 
+        jog_type = 'j'; // move in joint space
         for (int i = 0; i < 7; ++i) {
             uart_data[i] = (uint8_t)temp_array[i];
         }
         return true;
     }
 
-    // Type 2: POWER_ON command
+    // Type 2: special commands
     if (strncmp(trimmed, "POWER_ON;", 9) == 0) {
         HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_SET);
         return true;
@@ -71,9 +71,46 @@ bool parse_uart_message(const char* msg, float* f_val, uint8_t uart_data[7])
     }
     if (strncmp(trimmed, "RESET;", 6) == 0) {
         std::array<double, ServoManager::SERVO_COUNT>
-            reset_angles{}; // zero init
+            reset_angles{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; // zero init
         ServoManager::set_angles(reset_angles);
         Kinematics::calc_T6_0(reset_angles);
+        return true;
+    }
+    if (strncmp(trimmed, "PLAY_POS;", 9) == 0) {
+        return true;
+    }
+    if (strncmp(trimmed, "STOP_POS;", 9) == 0) {
+        return true;
+    }
+
+    //
+    // Type 3: Cartesian movement message
+    // Cartesian space: CN[float, 6 ints]
+    if (strncmp(trimmed, "CN[", 3) == 0) {
+        float temp_float;
+        int temp_array[6];
+
+        int parsed = sscanf(trimmed,
+                            "CN[%f,%d,%d,%d,%d,%d,%d];",
+                            &temp_float,
+                            &temp_array[0],
+                            &temp_array[1],
+                            &temp_array[2],
+                            &temp_array[3],
+                            &temp_array[4],
+                            &temp_array[5]);
+
+        if (parsed != 7)
+            return false;
+
+        *f_val = temp_float;
+        jog_type = 'c'; // 'c' for Cartesian space
+
+        for (int i = 0; i < 6; ++i) {
+            uart_data[i] = (uint8_t)temp_array[i];
+        }
+        uart_data[6] = 0; // Optional: clear the unused 7th element
+
         return true;
     }
 

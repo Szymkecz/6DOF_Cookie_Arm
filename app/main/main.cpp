@@ -112,7 +112,7 @@ int main()
         if (is_htim3_time_done) {
             ServoManager::print_angles();
             Kinematics::print_cords();
-            Controller.update(f_val, uart_data,jog_type);
+            // Controller.update(f_val, uart_data,jog_type);
             // Controller.play_demo();
             // ServoManager::print_angles();
 
